@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMD Messenger</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eceff1; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; height: 92vh; }
+        .app-container { width: 100%; max-width: 400px; background: #fff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; height: 90vh; position: relative; }
+        
+        .header { background: #2c3e50; color: white; padding: 15px; font-weight: bold; text-align: center; display: flex; justify-content: space-between; align-items: center; }
+        .view { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .hidden { display: none !important; }
+        
+        /* Auth */
+        .auth-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; background: #2c3e50; color: white; text-align: center; overflow-y: auto; }
+        .auth-container h2 { margin-bottom: 5px; }
+        .auth-container p { font-size: 13px; color: #bdc3c7; margin-bottom: 20px; }
+        .auth-form { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+        .auth-form input { padding: 12px; border-radius: 4px; border: none; outline: none; font-size: 14px; }
+        .auth-form button { padding: 12px; border-radius: 4px; border: none; background: #27ae60; color: white; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .auth-form button:hover { background: #219653; }
+        .switch-auth { margin-top: 15px; font-size: 12px; color: #bdc3c7; cursor: pointer; text-decoration: underline; }
+
+        /* Profil & Pemutar Musik */
+        .my-profile { display: flex; align-items: center; gap: 12px; padding: 12px 15px; background: #f8f9fa; border-bottom: 1px solid #ddd; }
+        .avatar-container { position: relative; cursor: pointer; }
+        .avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #ccc; border: 2px solid #ddd; }
+        .avatar-overlay { position: absolute; bottom: 0; right: 0; background: #2c3e50; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; justify-content: center; align-items: center; }
+        
+        .music-player-box { background: #2c3e50; color: white; padding: 8px 15px; font-size: 12px; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid #34495e; }
+        .music-controls { display: flex; gap: 6px; align-items: center; }
+        .music-controls select { background: #34495e; color: white; border: none; padding: 4px; border-radius: 4px; font-size: 11px; outline: none; flex: 1; }
+        .music-btn { border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
+        .btn-play-stop { background: #27ae60; color: white; }
+        .btn-upload-song { background: #2980b9; color: white; }
+
+        .menu-section { padding: 8px 15px; background: #eee; font-weight: bold; font-size: 12px; color: #555; display: flex; justify-content: space-between; align-items: center; }
+        .menu-section button { background: #27ae60; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold; }
+
+        .list-container { flex: 1; overflow-y: auto; }
+        .list-item { display: flex; align-items: center; gap: 12px; padding: 10px 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+        .list-item:hover { background: #f1f1f1; }
+        
+        .info { flex: 1; overflow: hidden; }
+        .name { font-weight: bold; font-size: 14px; color: #333; }
+        .pm { font-size: 12px; color: #7f8c8d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; cursor: pointer; }
+        .music-status { font-size: 11px; color: #27ae60; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
+
+        /* Chat Room */
+        .chat-header { background: #2c3e50; color: white; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
+        .chat-header-info { flex: 1; overflow: hidden; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9f9f9; }
+        .message { padding: 10px; border-radius: 6px; max-width: 75%; word-wrap: break-word; font-size: 14px; position: relative; padding-bottom: 22px; }
+        .message.incoming { background: #e0e0e0; align-self: flex-start; }
+        .message.outgoing { background: #dcf8c6; align-self: flex-end; }
+        .message.ping-msg { background: #ffcccc !important; border: 2px dashed #ff4d4d; font-weight: bold; text-align: center; width: 90%; align-self: center !important; }
+        .message-status { font-size: 10px; color: #555; position: absolute; bottom: 5px; right: 10px; font-weight: bold; }
+        .chat-image { max-width: 100%; border-radius: 6px; margin-top: 5px; cursor: pointer; display: block; }
+        
+        .chat-input { display: flex; padding: 8px 10px; background: #fff; border-top: 1px solid #ddd; gap: 6px; align-items: center; }
+        .chat-input input[type="text"] { flex: 1; padding: 9px; border: 1px solid #ccc; border-radius: 4px; outline: none; }
+        .chat-input input[type="file"] { display: none; }
+        .file-label { background: #7f8c8d; color: white; padding: 8px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .file-label:hover { background: #717d7e; }
+        .chat-input button { background: #2c3e50; color: white; border: none; padding: 9px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-ping { background: #e74c3c !important; }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            40% { transform: translate(1px, -1px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="appContainer">
+        
+        <!-- HALAMAN 0A: REGISTRASI -->
+        <div id="registerView" class="view auth-container">
+            <h2>PMD Messenger</h2>
+            <p>Daftar akun baru untuk mendapatkan PIN unik.</p>
+            <form id="registerForm" class="auth-form">
+                <input type="text" id="regDisplayName" placeholder="Nama Tampilan (Username)" required autocomplete="off">
+                <input type="text" id="regFullName" placeholder="Nama Lengkap" required autocomplete="off">
+                <input type="email" id="regEmail" placeholder="Alamat Email" required autocomplete="off">
+                <button type="submit">Daftar & Buat Akun</button>
+            </form>
+            <span class="switch-auth" id="toLoginBtn">Masuk dengan PIN</span>
+        </div>
+
+        <!-- HALAMAN 0B: LOGIN -->
+        <div id="loginView" class="view auth-container hidden">
+            <h2>PMD Messenger</h2>
+            <p>Masukkan PIN PMD Messenger yang sudah kamu miliki.</p>
+            <form id="loginForm" class="auth-form">
+                <input type="text" id="loginPin" placeholder="Masukkan PIN PMD Messenger" required autocomplete="off">
+                <button type="submit">Masuk</button>
+            </form>
+            <span class="switch-auth" id="toRegisterViewBtn">Belum punya akun? Daftar di sini</span>
+        </div>
+
+        <!-- HALAMAN 1: HOME -->
+        <div id="homeView" class="view hidden">
+            <div class="header">
+                <span>PMD Messenger</span>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <span id="myPinDisplay" style="font-size: 11px; background: #34495e; padding: 3px 6px; border-radius: 4px; cursor: pointer;" title="Klik untuk salin PIN">PIN: ...</span>
+                    <button id="logoutBtn" style="background: #c0392b; border: none; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Keluar</button>
+                </div>
+            </div>
+            
+            <div class="my-profile">
+                <div class="avatar-container" id="changeAvatarBtn" title="Klik untuk ganti Foto Profil">
+                    <img id="myAvatar" class="avatar" src="" alt="DP">
+                    <div class="avatar-overlay">📷</div>
+                    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+                </div>
+                <div class="info">
+                    <div class="name" id="myName">Memuat...</div>
+                    <div class="pm" id="editPmBtn" title="Klik untuk ubah PM">Belum ada PM (Klik untuk ubah)</div>
+                </div>
+            </div>
+
+            <!-- PEMUTAR MUSIK MINI (Pilih Lagu Bawaan / Upload dari Device) -->
+            <div class="music-player-box">
+                <div style="font-weight: bold; display: flex; align-items: center; justify-content: space-between;">
+                    <span>🎵 PMD-MS Music Player</span>
+                    <label for="deviceSongInput" class="music-btn btn-upload-song" style="cursor: pointer;">📂 Pilih dari Device/HP</label>
+                    <input type="file" id="deviceSongInput" accept="audio/*" style="display: none;">
+                </div>
+                <div class="music-controls">
+                    <select id="songSelect">
+                        <option value="">-- Pilih Lagu Bawaan --</option>
+                        <option value="Linkin Park - Numb">Instrument 1</option>
+                        <option value="Dewa 19 - Kangen">Instrument 2 /option>
+                        <option value="Peterpan - Separuh Aku">Instrument 2</option>
+                        <option value="Sheila on 7 - Sephia">Instrument 3</option>
+                    </select>
+                    <button id="playMusicBtn" class="music-btn btn-play-stop">Play</button>
+                </div>
+                <div class="music-status" id="myMusicDisplay">Status: Tidak memutar lagu</div>
+            </div>
+
+            <div class="menu-section">
+                <span>Grup Saya</span>
+                <button id="createGroupBtn" style="background: #2980b9;">+ Buat Grup</button>
+            </div>
+            <div id="groupList" class="list-container" style="max-height: 90px; border-bottom: 2px solid #ddd;"></div>
+
+            <div class="menu-section">
+                <span>Daftar Kontak Saya</span>
+                <button id="addContactBtn">+ Add PIN</button>
+            </div>
+            <div id="contactList" class="list-container"></div>
+        </div>
+
+        <!-- HALAMAN 2: CHAT ROOM -->
+        <div id="chatView" class="view hidden">
+            <div class="chat-header">
+                <button id="backBtn">❮ Kembali</button>
+                <img id="chatTargetAvatar" class="avatar" style="width: 33px; height: 33px;" src="" alt="DP">
+                <div class="chat-header-info">
+                    <div class="name" id="chatTargetName">Target</div>
+                    <div class="pm" id="chatTargetPm" style="font-size: 11px;">Status...</div>
+                </div>
+                <button id="inviteMemberBtn" class="hidden" style="background: #27ae60; border: none; color: white; padding: 4px 8px; border-radius: 3px; font-size: 11px; cursor: pointer;">+ Invite</button>
+            </div>
+
+            <div id="messagesList" class="chat-messages"></div>
+            
+            <form id="chatForm" class="chat-input">
+                <label for="imageInput" class="file-label" title="Kirim Gambar">📷</label>
+                <input type="file" id="imageInput" accept="image/*">
+                
+                <input type="text" id="messageInput" placeholder="Tulis pesan..." autocomplete="off">
+                <button type="button" id="pingBtn" class="btn-ping">PING</button>
+                <button type="submit">Kirim</button>
+            </form>
+        </div>
+
+    </div>
+
+    <audio id="pingAudio" src="https://www.myinstants.com/media/sounds/bbm-ping.mp3" preload="auto"></audio>
+    <audio id="bgMusicPlayer" preload="auto"></audio>
+
+    <script type="module">
+	//	import { initializeApp } from "firebase/app";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+		const firebaseConfig = {
+		  apiKey: "AIzaSyA_UH7bc9yjNULvG2vnXqdv7i9b8l_vd8E",
+		  authDomain: "chat-pmd.firebaseapp.com",
+		  projectId: "chat-pmd",
+		  storageBucket: "chat-pmd.firebasestorage.app",
+		  messagingSenderId: "655673422167",
+		  appId: "1:655673422167:web:005ff445d4fb2db1bd0e12"
+		};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const registerView = document.getElementById('registerView');
+        const loginView = document.getElementById('loginView');
+        const registerForm = document.getElementById('registerForm');
+        const loginForm = document.getElementById('loginForm');
+        const toLoginBtn = document.getElementById('toLoginBtn');
+        const toRegisterViewBtn = document.getElementById('toRegisterViewBtn');
+
+        const regDisplayName = document.getElementById('regDisplayName');
+        const regFullName = document.getElementById('regFullName');
+        const regEmail = document.getElementById('regEmail');
+        const loginPin = document.getElementById('loginPin');
+
+        const homeView = document.getElementById('homeView');
+        const chatView = document.getElementById('chatView');
+        const contactList = document.getElementById('contactList');
+        const groupList = document.getElementById('groupList');
+        const createGroupBtn = document.getElementById('createGroupBtn');
+        const addContactBtn = document.getElementById('addContactBtn');
+        const inviteMemberBtn = document.getElementById('inviteMemberBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        const myName = document.getElementById('myName');
+        const editPmBtn = document.getElementById('editPmBtn');
+        const myAvatar = document.getElementById('myAvatar');
+        const changeAvatarBtn = document.getElementById('changeAvatarBtn');
+        const avatarFileInput = document.getElementById('avatarFileInput');
+        const myPinDisplay = document.getElementById('myPinDisplay');
+
+        const songSelect = document.getElementById('songSelect');
+        const playMusicBtn = document.getElementById('playMusicBtn');
+        const deviceSongInput = document.getElementById('deviceSongInput');
+        const myMusicDisplay = document.getElementById('myMusicDisplay');
+        const bgMusicPlayer = document.getElementById('bgMusicPlayer');
+
+        const backBtn = document.getElementById('backBtn');
+        const chatTargetName = document.getElementById('chatTargetName');
+        const chatTargetPm = document.getElementById('chatTargetPm');
+        const chatTargetAvatar = document.getElementById('chatTargetAvatar');
+        const messagesList = document.getElementById('messagesList');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        const imageInput = document.getElementById('imageInput');
+        const pingBtn = document.getElementById('pingBtn');
+        const pingAudio = document.getElementById('pingAudio');
+        const appContainer = document.getElementById('appContainer');
+
+        let myPin = null;
+        let displayName = "";
+        let userPm = "Available";
+        let userMusic = "";
+        let userAvatar = "";
+        let isPlayingMusic = false; // Status pemutar musik lokal
+
+        let activeChatId = null;   
+        let activeChatType = null; 
+
+        // Auto Login Aman
+        window.addEventListener('DOMContentLoaded', async () => {
+            const savedPin = localStorage.getItem('bbm_user_pin');
+            if (savedPin) {
+                try {
+                    const userRef = doc(db, "users", savedPin);
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists()) {
+                        const userData = userSnap.data();
+                        myPin = userData.pin;
+                        displayName = userData.name;
+                        userPm = userData.pm || "Available";
+                        userMusic = userData.music || "";
+                        userAvatar = userData.avatar || `https://i.pravatar.cc/150?u=${myPin}`;
+
+                        setupDashboard(userData);
+                        return;
+                    }
+                } catch (err) {
+                    console.error("Gagal auto-login:", err);
+                }
+                localStorage.removeItem('bbm_user_pin');
+            }
+            registerView.classList.remove('hidden');
+        });
+
+        toLoginBtn.addEventListener('click', () => {
+            registerView.classList.add('hidden');
+            loginView.classList.remove('hidden');
+        });
+
+        toRegisterViewBtn.addEventListener('click', () => {
+            loginView.classList.add('hidden');
+            registerView.classList.remove('hidden');
+        });
+
+        // Register
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            displayName = regDisplayName.value.trim();
+            const fullName = regFullName.value.trim();
+            const email = regEmail.value.trim();
+            
+            myPin = Math.random().toString(16).substring(2, 10).toUpperCase();
+            userAvatar = `https://i.pravatar.cc/150?u=${myPin}`;
+
+            try {
+                const userRef = doc(db, "users", myPin);
+                await setDoc(userRef, {
+                    pin: myPin,
+                    name: displayName,
+                    fullName: fullName,
+                    email: email,
+                    pm: "Available",
+                    music: "",
+                    avatar: userAvatar,
+                    contacts: [],
+                    lastActive: serverTimestamp()
+                });
+
+                localStorage.setItem('bbm_user_pin', myPin);
+                const userSnap = await getDoc(userRef);
+                setupDashboard(userSnap.data());
+            } catch (err) {
+                alert("Gagal mendaftarkan akun: " + err.message);
+            }
+        });
+
+        // Login dengan PIN
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const enteredPin = loginPin.value.trim().toUpperCase();
+
+            if (!enteredPin) {
+                alert("Masukkan PIN terlebih dahulu!");
+                return;
+            }
+
+            try {
+                const userRef = doc(db, "users", enteredPin);
+                const userSnap = await getDoc(userRef);
+
+                if (!userSnap.exists()) {
+                    alert("PIN PMD Messenger tidak ditemukan! Periksa kembali PIN kamu.");
+                    return;
+                }
+
+                const userData = userSnap.data();
+                myPin = userData.pin;
+                displayName = userData.name;
+                userPm = userData.pm || "Available";
+                userMusic = userData.music || "";
+                userAvatar = userData.avatar || `https://i.pravatar.cc/150?u=${myPin}`;
+
+                localStorage.setItem('bbm_user_pin', myPin);
+                setupDashboard(userData);
+            } catch (err) {
+                alert("Gagal masuk: " + err.message);
+            }
+        });
+
+        function setupDashboard(userData) {
+            myName.innerText = userData.name;
+            editPmBtn.innerText = userData.pm || "Available";
+            myMusicDisplay.innerText = userData.music ? `🎵 Listening: ${userData.music}` : "Status: Tidak memutar lagu";
+            myAvatar.src = userData.avatar || `https://i.pravatar.cc/150?u=${userData.pin}`;
+            myPinDisplay.innerText = "PIN: " + userData.pin;
+
+            if(userData.music) {
+                isPlayingMusic = true;
+                playMusicBtn.innerText = "Stop";
+            }
+
+            registerView.classList.add('hidden');
+            loginView.classList.add('hidden');
+            homeView.classList.remove('hidden');
+
+            const userRef = doc(db, "users", userData.pin);
+            initBbmApp(userRef);
+        }
+
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('bbm_user_pin');
+            location.reload();
+        });
+
+        myPinDisplay.addEventListener('click', () => {
+            navigator.clipboard.writeText(myPin);
+            alert(`PIN kamu (${myPin}) berhasil disalin!`);
+        });
+
+        changeAvatarBtn.addEventListener('click', () => avatarFileInput.click());
+        avatarFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                userAvatar = event.target.result;
+                myAvatar.src = userAvatar;
+
+                const userRef = doc(db, "users", myPin);
+                await updateDoc(userRef, { avatar: userAvatar });
+                alert("Foto profil (DP) berhasil diperbarui!");
+            };
+            reader.readAsDataURL(file);
+        });
+
+        editPmBtn.addEventListener('click', async () => {
+            const newPm = prompt("Masukkan Personal Message (PM) baru:", userPm);
+            if (newPm !== null) {
+                userPm = newPm;
+                editPmBtn.innerText = userPm;
+
+                const userRef = doc(db, "users", myPin);
+                await updateDoc(userRef, { pm: userPm });
+            }
+        });
+
+        // PERBAIKAN TOMBOL PLAY/STOP & PILIHAN LAGU DARI DEVICE
+        playMusicBtn.addEventListener('click', async () => {
+            const userRef = doc(db, "users", myPin);
+
+            if (isPlayingMusic) {
+                // Aksi: STOP MUSIK
+                bgMusicPlayer.pause();
+                bgMusicPlayer.src = "";
+                userMusic = "";
+                isPlayingMusic = false;
+                myMusicDisplay.innerText = "Status: Tidak memutar lagu";
+                playMusicBtn.innerText = "Play";
+                songSelect.value = "";
+                await updateDoc(userRef, { music: "" });
+            } else {
+                // Aksi: PLAY MUSIK dari Dropdown
+                const selectedSong = songSelect.value;
+                if (!selectedSong) {
+                    alert("Pilih lagu terlebih dahulu atau pilih dari perangkat!");
+                    return;
+                }
+
+                const sampleAudioUrls = {
+                    "Linkin Park - Numb": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+                    "Dewa 19 - Kangen": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+                    "Peterpan - Separuh Aku": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+                    "Sheila on 7 - Sephia": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"
+                };
+
+                bgMusicPlayer.src = sampleAudioUrls[selectedSong];
+                bgMusicPlayer.play().catch(err => console.log(err));
+                
+                userMusic = selectedSong;
+                isPlayingMusic = true;
+                myMusicDisplay.innerText = `🎵 Listening: ${userMusic}`;
+                playMusicBtn.innerText = "Stop";
+
+                await updateDoc(userRef, { music: userMusic });
+            }
+        });
+
+        // Fitur Pilih Lagu dari Device/HP
+        deviceSongInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const songName = file.name.replace(/\.[^/.]+$/, ""); // Ambil nama file tanpa ekstensi
+            const fileURL = URL.createObjectURL(file);
+            const userRef = doc(db, "users", myPin);
+
+            bgMusicPlayer.src = fileURL;
+            bgMusicPlayer.play().catch(err => console.log(err));
+
+            userMusic = `${songName} (Local)`;
+            isPlayingMusic = true;
+            myMusicDisplay.innerText = `🎵 Listening: ${userMusic}`;
+            playMusicBtn.innerText = "Stop";
+            songSelect.value = ""; // Reset dropdown bawaan
+
+            await updateDoc(userRef, { music: userMusic });
+        });
+
+        function initBbmApp(userRef) {
+            addContactBtn.onclick = async () => {
+                const targetPin = prompt("Masukkan PIN PMD Messenger teman yang ingin di-Add:").trim().toUpperCase();
+                if (!targetPin) return;
+                if (targetPin === myPin) {
+                    alert("Kamu tidak bisa memasukkan PIN kamu sendiri!");
+                    return;
+                }
+
+                try {
+                    const targetRef = doc(db, "users", targetPin);
+                    const targetSnap = await getDoc(targetRef);
+
+                    if (!targetSnap.exists()) {
+                        alert("PIN PMD Messenger tidak ditemukan!");
+                        return;
+                    }
+
+                    await updateDoc(userRef, { contacts: arrayUnion(targetPin) });
+                    alert(`Berhasil meng-add kontak ${targetPin}!`);
+                } catch (err) {
+                    alert("Gagal menambahkan kontak: " + err.message);
+                }
+            };
+
+            createGroupBtn.onclick = async () => {
+                const groupName = prompt("Masukkan Nama Grup PMD Messenger:");
+                if (!groupName) return;
+                try {
+                    await addDoc(collection(db, "groups"), {
+                        groupName: groupName,
+                        createdBy: displayName,
+                        members: [myPin], 
+                        createdAt: serverTimestamp()
+                    });
+                    alert(`Grup "${groupName}" berhasil dibuat!`);
+                } catch (err) { console.error(err); }
+            };
+
+            inviteMemberBtn.onclick = async () => {
+                if (!activeChatId || activeChatType !== "group") return;
+                const memberPin = prompt("Masukkan PIN kontak yang ingin di-invite ke grup ini:").trim().toUpperCase();
+                if (!memberPin) return;
+
+                try {
+                    const groupRef = doc(db, "groups", activeChatId);
+                    await updateDoc(groupRef, { members: arrayUnion(memberPin) });
+                    alert(`PIN ${memberPin} berhasil di-invite ke dalam grup!`);
+                } catch (err) {
+                    alert("Gagal invite: " + err.message);
+                }
+            };
+
+            onSnapshot(userRef, (docSnap) => {
+                if (!docSnap.exists()) return;
+                const myData = docSnap.data();
+                const myContactsPins = myData.contacts || [];
+
+                onSnapshot(collection(db, "users"), (usersSnapshot) => {
+                    contactList.innerHTML = "";
+                    if (myContactsPins.length === 0) {
+                        contactList.innerHTML = `<div style="padding: 15px; text-align: center; color: #888; font-size: 12px;">Belum ada kontak. Klik "+ Add PIN" di atas!</div>`;
+                        return;
+                    }
+
+                    usersSnapshot.forEach((userDoc) => {
+                        const userData = userDoc.data();
+                        if (myContactsPins.includes(userData.pin)) {
+                            const item = document.createElement('div');
+                            item.className = 'list-item';
+                            const musicHtml = userData.music ? `<div class="music-status">🎵 ${userData.music}</div>` : "";
+                            item.innerHTML = `
+                                <img class="avatar" src="${userData.avatar || 'https://i.pravatar.cc/150?u=' + userData.pin}" alt="DP">
+                                <div class="info">
+                                    <div class="name">${userData.name} <span style="font-size:10px; color:#888;">(${userData.pin})</span></div>
+                                    <div class="pm">${userData.pm || 'Available'}</div>
+                                    ${musicHtml}
+                                </div>
+                            `;
+                            item.addEventListener('click', () => {
+                                activeChatId = userData.pin;
+                                activeChatType = "private";
+                                inviteMemberBtn.classList.add('hidden');
+                                
+                                chatTargetName.innerText = userData.name;
+                                chatTargetPm.innerText = userData.pm || 'Available';
+                                chatTargetAvatar.src = userData.avatar || 'https://i.pravatar.cc/150?u=' + userData.pin;
+
+                                homeView.classList.add('hidden');
+                                chatView.classList.remove('hidden');
+                                loadChatMessages();
+                            });
+                            contactList.appendChild(item);
+                        }
+                    });
+                });
+            });
+
+            onSnapshot(collection(db, "groups"), (snapshot) => {
+                groupList.innerHTML = "";
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const members = data.members || [];
+
+                    if (members.includes(myPin)) {
+                        const item = document.createElement('div');
+                        item.className = 'list-item';
+                        item.innerHTML = `
+                            <img class="avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=${data.groupName}" alt="Group">
+                            <div class="info">
+                                <div class="name">👥 ${data.groupName}</div>
+                                <div class="pm">Anggota: ${members.length} orang</div>
+                            </div>
+                        `;
+                        item.addEventListener('click', () => {
+                            activeChatId = docSnap.id;
+                            activeChatType = "group";
+                            inviteMemberBtn.classList.remove('hidden');
+
+                            chatTargetName.innerText = data.groupName;
+                            chatTargetPm.innerText = `Grup Chat (${members.length} Anggota)`;
+                            chatTargetAvatar.src = `https://api.dicebear.com/7.x/identicon/svg?seed=${data.groupName}`;
+
+                            homeView.classList.add('hidden');
+                            chatView.classList.remove('hidden');
+                            loadChatMessages();
+                        });
+                        groupList.appendChild(item);
+                    }
+                });
+            });
+        }
+
+        backBtn.addEventListener('click', () => {
+            chatView.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            activeChatId = null;
+            inviteMemberBtn.classList.add('hidden');
+        });
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            const file = imageInput.files[0];
+
+            if (!text && !file) return;
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    await sendDataToFirestore({ type: "image", imageBase64: event.target.result, text: text });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                await sendDataToFirestore({ type: "text", text: text, status: "S" });
+            }
+
+            messageInput.value = "";
+            imageInput.value = "";
+        });
+
+        async function sendDataToFirestore(payload) {
+            try {
+                await addDoc(collection(db, "chats"), {
+                    senderPin: myPin,
+                    senderName: displayName,
+                    chatType: activeChatType, 
+                    targetId: activeChatId,   
+                    ...payload,
+                    createdAt: serverTimestamp()
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        pingBtn.addEventListener('click', async () => {
+            await sendDataToFirestore({ type: "ping", text: "🔔 PING!!! 🔔", status: "S" });
+        });
+
+        function triggerPingEffect() {
+            pingAudio.currentTime = 0;
+            pingAudio.play().catch(err => console.log(err));
+            appContainer.classList.add('shake');
+            setTimeout(() => appContainer.classList.remove('shake'), 400);
+            if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
+        }
+
+        let unsubscribeChat = null;
+        let lastProcessedPingId = null;
+
+        function loadChatMessages() {
+            if (unsubscribeChat) unsubscribeChat();
+
+            const q = query(collection(db, "chats"), orderBy("createdAt", "asc"));
+            
+            unsubscribeChat = onSnapshot(q, (snapshot) => {
+                messagesList.innerHTML = ""; 
+                
+                snapshot.forEach((documentSnapshot) => {
+                    const data = documentSnapshot.data();
+                    const docId = documentSnapshot.id;
+                    
+                    let isRelevant = false;
+                    if (activeChatType === "private") {
+                        isRelevant = (data.chatType === "private" && 
+                                     ((data.senderPin === myPin && data.targetId === activeChatId) ||
+                                     (data.senderPin === activeChatId && data.targetId === myPin)));
+                    } else if (activeChatType === "group") {
+                        isRelevant = (data.chatType === "group" && data.targetId === activeChatId);
+                    }
+                    
+                    if (!isRelevant) return;
+
+                    const messageDiv = document.createElement('div');
+                    const isMe = data.senderPin === myPin;
+                    
+                    if (data.type === "ping") {
+                        messageDiv.className = `message ping-msg`;
+                        messageDiv.innerHTML = `<strong>${data.senderName}</strong> mengirim <strong>PING!!!</strong>`;
+                        if (!isMe && docId !== lastProcessedPingId) {
+                            triggerPingEffect();
+                            lastProcessedPingId = docId;
+                        }
+                    } else {
+                        messageDiv.className = `message ${isMe ? 'outgoing' : 'incoming'}`;
+                        
+                        let contentHtml = `<strong>${data.senderName}</strong><br>`;
+                        if (data.type === "image") {
+                            contentHtml += `<img src="${data.imageBase64}" class="chat-image" alt="Gambar">`;
+                            if (data.text) contentHtml += `<div style="margin-top: 4px;">${data.text}</div>`;
+                        } else {
+                            contentHtml += `${data.text}`;
+                        }
+
+                        let statusText = "";
+                        if (isMe && data.chatType === "private") {
+                            if (data.status === "S") statusText = "✓ S";
+                            else if (data.status === "D") statusText = "✓✓ D";
+                            else if (data.status === "R") statusText = "R ✔✔";
+                        }
+                        
+                        contentHtml += `<span class="message-status">${statusText}</span>`;
+                        messageDiv.innerHTML = contentHtml;
+                    }
+
+                    messagesList.appendChild(messageDiv);
+
+                    if (!isMe && data.chatType === "private" && data.status === "S") {
+                        updateDoc(doc(db, "chats", docId), { status: "D" });
+                    }
+                    if (!isMe && data.chatType === "private" && data.status === "D") {
+                        updateDoc(doc(db, "chats", docId), { status: "R" });
+                    }
+                });
+                
+                messagesList.scrollTop = messagesList.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
