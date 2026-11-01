@@ -155,6 +155,7 @@
                 <div class="music-controls flex gap-2 items-center">
                     <select id="songSelect" class="bg-slate-900 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-emerald-500 flex-1 transition-all">
                         <option value="">-- Pilih Lagu Bawaan --</option>
+                        <option value="Yusuf Mansyur - Al Mulk">Surah Al-Mulk</option>
                         <option value="Linkin Park - Numb">Instrument 1</option>
                         <option value="Dewa 19 - Kangen">Instrument 2</option>
                         <option value="Peterpan - Separuh Aku">Instrument 3</option>
@@ -482,10 +483,11 @@
                 }
 
                 const sampleAudioUrls = {
-                    "Linkin Park - Numb": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-                    "Dewa 19 - Kangen": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-                    "Peterpan - Separuh Aku": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-                    "Sheila on 7 - Sephia": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"
+					"Yusuf Mansyur - Al-Mulk": "al_mulk.mp3",
+                    "Linkin Park - Numb": "atlasaudio-calm-ambient-625684.mp3",
+                    "Dewa 19 - Kangen": "kulakovka-inspirational-624629.mp3",
+                    "Peterpan - Separuh Aku": "atlasaudio-autumn-background-621525.mp3",
+                    "Sheila on 7 - Sephia": "atlasaudio-nature-621587.mp3"
                 };
 
                 bgMusicPlayer.src = sampleAudioUrls[selectedSong];
