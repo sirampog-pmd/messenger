@@ -4,203 +4,237 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PMD Messenger</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: Arial, sans-serif; background: #eceff1; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; height: 92vh; }
-        .app-container { width: 100%; max-width: 400px; background: #fff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; height: 90vh; position: relative; }
-        
-        .header { background: #2c3e50; color: white; padding: 15px; font-weight: bold; text-align: center; display: flex; justify-content: space-between; align-items: center; }
-        .view { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .hidden { display: none !important; }
-        
-        /* Auth */
-        .auth-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; background: #2c3e50; color: white; text-align: center; overflow-y: auto; }
-        .auth-container h2 { margin-bottom: 5px; }
-        .auth-container p { font-size: 13px; color: #bdc3c7; margin-bottom: 20px; }
-        .auth-form { width: 100%; display: flex; flex-direction: column; gap: 12px; }
-        .auth-form input { padding: 12px; border-radius: 4px; border: none; outline: none; font-size: 14px; }
-        .auth-form button { padding: 12px; border-radius: 4px; border: none; background: #27ae60; color: white; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .auth-form button:hover { background: #219653; }
-        .switch-auth { margin-top: 15px; font-size: 12px; color: #bdc3c7; cursor: pointer; text-decoration: underline; }
-
-        /* Profil & Pemutar Musik */
-        .my-profile { display: flex; align-items: center; gap: 12px; padding: 12px 15px; background: #f8f9fa; border-bottom: 1px solid #ddd; }
-        .avatar-container { position: relative; cursor: pointer; }
-        .avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #ccc; border: 2px solid #ddd; }
-        .avatar-overlay { position: absolute; bottom: 0; right: 0; background: #2c3e50; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; justify-content: center; align-items: center; }
-        
-        .music-player-box { background: #2c3e50; color: white; padding: 8px 15px; font-size: 12px; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid #34495e; }
-        .music-controls { display: flex; gap: 6px; align-items: center; }
-        .music-controls select { background: #34495e; color: white; border: none; padding: 4px; border-radius: 4px; font-size: 11px; outline: none; flex: 1; }
-        .music-btn { border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
-        .btn-play-stop { background: #27ae60; color: white; }
-        .btn-upload-song { background: #2980b9; color: white; }
-
-        .menu-section { padding: 8px 15px; background: #eee; font-weight: bold; font-size: 12px; color: #555; display: flex; justify-content: space-between; align-items: center; }
-        .menu-section button { background: #27ae60; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold; }
-
-        .list-container { flex: 1; overflow-y: auto; }
-        .list-item { display: flex; align-items: center; gap: 12px; padding: 10px 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
-        .list-item:hover { background: #f1f1f1; }
-        
-        .info { flex: 1; overflow: hidden; }
-        .name { font-weight: bold; font-size: 14px; color: #333; }
-        .pm { font-size: 12px; color: #7f8c8d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; cursor: pointer; }
-        .music-status { font-size: 11px; color: #27ae60; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
-
-        /* Chat Room */
-        .chat-header { background: #2c3e50; color: white; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
-        .chat-header-info { flex: 1; overflow: hidden; }
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9f9f9; }
-        .message { padding: 10px; border-radius: 6px; max-width: 75%; word-wrap: break-word; font-size: 14px; position: relative; padding-bottom: 22px; }
-        .message.incoming { background: #e0e0e0; align-self: flex-start; }
-        .message.outgoing { background: #dcf8c6; align-self: flex-end; }
-        .message.ping-msg { background: #ffcccc !important; border: 2px dashed #ff4d4d; font-weight: bold; text-align: center; width: 90%; align-self: center !important; }
-        .message-status { font-size: 10px; color: #555; position: absolute; bottom: 5px; right: 10px; font-weight: bold; }
-        .chat-image { max-width: 100%; border-radius: 6px; margin-top: 5px; cursor: pointer; display: block; }
-        
-        .chat-input { display: flex; padding: 8px 10px; background: #fff; border-top: 1px solid #ddd; gap: 6px; align-items: center; }
-        .chat-input input[type="text"] { flex: 1; padding: 9px; border: 1px solid #ccc; border-radius: 4px; outline: none; }
-        .chat-input input[type="file"] { display: none; }
-        .file-label { background: #7f8c8d; color: white; padding: 8px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .file-label:hover { background: #717d7e; }
-        .chat-input button { background: #2c3e50; color: white; border: none; padding: 9px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-ping { background: #e74c3c !important; }
-
+        /* Custom Animations & Glassmorphism */
         @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            40% { transform: translate(1px, -1px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-4px, 2px) rotate(-1deg); }
+            40% { transform: translate(4px, -2px) rotate(1deg); }
+            60% { transform: translate(-4px, -2px) rotate(-1deg); }
+            80% { transform: translate(4px, 2px) rotate(1deg); }
         }
         .shake { animation: shake 0.4s ease-in-out; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex items-center justify-center p-0 sm:p-4 md:p-6 antialiased selection:bg-emerald-500 selection:text-white">
 
-    <div class="app-container" id="appContainer">
+    <!-- App Container -->
+    <div class="w-full sm:max-w-md bg-slate-900 sm:rounded-2xl shadow-2xl shadow-emerald-950/40 border border-slate-800/80 overflow-hidden flex flex-direction-col h-screen sm:h-[90vh] relative transition-all duration-300" id="appContainer">
         
         <!-- HALAMAN 0A: REGISTRASI -->
-        <div id="registerView" class="view auth-container">
-            <h2>PMD Messenger</h2>
-            <p>Daftar akun baru untuk mendapatkan PIN unik.</p>
-            <form id="registerForm" class="auth-form">
-                <input type="text" id="regDisplayName" placeholder="Nama Tampilan (Username)" required autocomplete="off">
-                <input type="text" id="regFullName" placeholder="Nama Lengkap" required autocomplete="off">
-                <input type="email" id="regEmail" placeholder="Alamat Email" required autocomplete="off">
-                <button type="submit">Daftar & Buat Akun</button>
+        <div id="registerView" class="view flex-1 flex flex-col justify-center items-center p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/40 text-center overflow-y-auto">
+            <div class="w-16 h-16 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-4 transform hover:rotate-6 transition-transform">
+                <span class="text-3xl">💬</span>
+            </div>
+            <h2 class="text-2xl font-black tracking-tight text-white mb-1">PMD Messenger</h2>
+            <p class="text-xs text-slate-400 mb-8 max-w-[260px]">Daftar akun baru untuk mendapatkan PIN unik transaksi & percakapan Anda.</p>
+            
+            <form id="registerForm" class="w-full flex flex-col gap-3.5 max-w-xs">
+                <div class="relative">
+                    <input type="text" id="regDisplayName" placeholder="Nama Tampilan (Username)" required autocomplete="off"
+                           class="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all">
+                </div>
+                <div class="relative">
+                    <input type="text" id="regFullName" placeholder="Nama Lengkap" required autocomplete="off"
+                           class="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all">
+                </div>
+                <div class="relative">
+                    <input type="email" id="regEmail" placeholder="Alamat Email" required autocomplete="off"
+                           class="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all">
+                </div>
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-600/30 active:scale-[0.98] transition-all text-sm mt-2">
+                    Daftar & Buat Akun
+                </button>
             </form>
-            <span class="switch-auth" id="toLoginBtn">Masuk dengan PIN</span>
+            
+            <button id="toLoginBtn" class="mt-6 text-xs text-emerald-400 hover:text-emerald-300 font-medium transition-colors underline decoration-emerald-500/30 underline-offset-4">
+                Masuk dengan PIN
+            </button>
         </div>
 
         <!-- HALAMAN 0B: LOGIN -->
-        <div id="loginView" class="view auth-container hidden">
-            <h2>PMD Messenger</h2>
-            <p>Masukkan PIN PMD Messenger yang sudah kamu miliki.</p>
-            <form id="loginForm" class="auth-form">
-                <input type="text" id="loginPin" placeholder="Masukkan PIN PMD Messenger" required autocomplete="off">
-                <button type="submit">Masuk</button>
+        <div id="loginView" class="view flex-1 flex flex-col justify-center items-center p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/40 text-center overflow-y-auto hidden">
+            <div class="w-16 h-16 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-4 transform hover:-rotate-6 transition-transform">
+                <span class="text-3xl">🔑</span>
+            </div>
+            <h2 class="text-2xl font-black tracking-tight text-white mb-1">Selamat Datang</h2>
+            <p class="text-xs text-slate-400 mb-8 max-w-[260px]">Masukkan PIN PMD Messenger yang sudah kamu miliki.</p>
+            
+            <form id="loginForm" class="w-full flex flex-col gap-3.5 max-w-xs">
+                <div class="relative">
+                    <input type="text" id="loginPin" placeholder="Masukkan PIN BBM / PMD" required autocomplete="off"
+                           class="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl px-4 py-3.5 text-center text-lg tracking-widest font-mono text-emerald-400 uppercase placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all">
+                </div>
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-600/30 active:scale-[0.98] transition-all text-sm mt-2">
+                    Masuk Sekarang
+                </button>
             </form>
-            <span class="switch-auth" id="toRegisterViewBtn">Belum punya akun? Daftar di sini</span>
+            
+            <button id="toRegisterViewBtn" class="mt-6 text-xs text-emerald-400 hover:text-emerald-300 font-medium transition-colors underline decoration-emerald-500/30 underline-offset-4">
+                Belum punya akun? Daftar di sini
+            </button>
         </div>
 
         <!-- HALAMAN 1: HOME -->
-        <div id="homeView" class="view hidden">
-            <div class="header">
-                <span>PMD Messenger</span>
-                <div style="display: flex; gap: 6px; align-items: center;">
-                    <span id="myPinDisplay" style="font-size: 11px; background: #34495e; padding: 3px 6px; border-radius: 4px; cursor: pointer;" title="Klik untuk salin PIN">PIN: ...</span>
-                    <button id="logoutBtn" style="background: #c0392b; border: none; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Keluar</button>
+        <div id="homeView" class="view flex-1 flex flex-col overflow-hidden bg-slate-900 hidden">
+            <!-- App Header -->
+            <div class="bg-slate-900/90 backdrop-blur-md px-4 py-3.5 border-b border-slate-800/80 flex justify-between items-center z-10">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">💬</span>
+                    <span class="font-bold text-base text-white tracking-tight">PMD Messenger</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="myPinDisplay" 
+                          class="font-mono text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg cursor-pointer hover:bg-emerald-500/20 transition-all" 
+                          title="Klik untuk salin PIN">PIN: ...</span>
+                    <button id="logoutBtn" 
+                            class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all">
+                        Keluar
+                    </button>
                 </div>
             </div>
             
-            <div class="my-profile">
-                <div class="avatar-container" id="changeAvatarBtn" title="Klik untuk ganti Foto Profil">
-                    <img id="myAvatar" class="avatar" src="" alt="DP">
-                    <div class="avatar-overlay">📷</div>
-                    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+            <!-- Profil Saya -->
+            <div class="my-profile flex items-center gap-3.5 px-4 py-3 bg-slate-800/40 border-b border-slate-800/60">
+                <div class="avatar-container relative cursor-pointer group" id="changeAvatarBtn" title="Klik untuk ganti Foto Profil">
+                    <img id="myAvatar" class="avatar w-12 h-12 rounded-full object-cover bg-slate-800 ring-2 ring-emerald-500/40 group-hover:ring-emerald-400 transition-all" src="" alt="DP">
+                    <div class="avatar-overlay absolute bottom-0 right-0 bg-slate-900 border border-slate-700 text-white rounded-full w-4 h-4 text-[9px] flex items-center justify-center shadow-md">📷</div>
+                    <input type="file" id="avatarFileInput" accept="image/*" class="hidden">
                 </div>
-                <div class="info">
-                    <div class="name" id="myName">Memuat...</div>
-                    <div class="pm" id="editPmBtn" title="Klik untuk ubah PM">Belum ada PM (Klik untuk ubah)</div>
+                <div class="info flex-1 overflow-hidden">
+                    <div class="name font-bold text-sm text-slate-100 truncate" id="myName">Memuat...</div>
+                    <div class="pm text-xs text-slate-400 truncate hover:text-slate-200 transition-colors cursor-pointer italic" id="editPmBtn" title="Klik untuk ubah PM">Belum ada PM (Klik untuk ubah)</div>
                 </div>
             </div>
 
-            <!-- PEMUTAR MUSIK MINI (Pilih Lagu Bawaan / Upload dari Device) -->
-            <div class="music-player-box">
-                <div style="font-weight: bold; display: flex; align-items: center; justify-content: space-between;">
-                    <span>🎵 PMD-MS Music Player</span>
-                    <label for="deviceSongInput" class="music-btn btn-upload-song" style="cursor: pointer;">📂 Pilih dari Device/HP</label>
-                    <input type="file" id="deviceSongInput" accept="audio/*" style="display: none;">
+            <!-- PEMUTAR MUSIK MINI MODERN -->
+            <div class="music-player-box bg-slate-800/80 backdrop-blur-sm px-4 py-3 border-b border-slate-800/80 flex flex-col gap-2">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-200">
+                    <span class="flex items-center gap-1.5"><span class="animate-pulse">🎵</span> Music Player</span>
+                    <label for="deviceSongInput" class="music-btn btn-upload-song bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 px-2.5 py-1 rounded-lg cursor-pointer text-[11px] font-semibold transition-all">📂 Ambil Lagu Device</label>
+                    <input type="file" id="deviceSongInput" accept="audio/*" class="hidden">
                 </div>
-                <div class="music-controls">
-                    <select id="songSelect">
+                <div class="music-controls flex gap-2 items-center">
+                    <select id="songSelect" class="bg-slate-900 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-emerald-500 flex-1 transition-all">
                         <option value="">-- Pilih Lagu Bawaan --</option>
                         <option value="Linkin Park - Numb">Instrument 1</option>
-                        <option value="Dewa 19 - Kangen">Instrument 2 /option>
-                        <option value="Peterpan - Separuh Aku">Instrument 2</option>
-                        <option value="Sheila on 7 - Sephia">Instrument 3</option>
+                        <option value="Dewa 19 - Kangen">Instrument 2</option>
+                        <option value="Peterpan - Separuh Aku">Instrument 3</option>
+                        <option value="Sheila on 7 - Sephia">Instrument 4</option>
                     </select>
-                    <button id="playMusicBtn" class="music-btn btn-play-stop">Play</button>
+                    <button id="playMusicBtn" class="music-btn btn-play-stop bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all active:scale-95 shadow-md shadow-emerald-900/30">Play</button>
                 </div>
-                <div class="music-status" id="myMusicDisplay">Status: Tidak memutar lagu</div>
+                <div class="music-status text-[11px] text-emerald-400 font-medium truncate" id="myMusicDisplay">Status: Tidak memutar lagu</div>
             </div>
 
-            <div class="menu-section">
-                <span>Grup Saya</span>
-                <button id="createGroupBtn" style="background: #2980b9;">+ Buat Grup</button>
-            </div>
-            <div id="groupList" class="list-container" style="max-height: 90px; border-bottom: 2px solid #ddd;"></div>
+            <!-- List Workspace Area -->
+            <div class="flex-1 overflow-y-auto flex flex-col divide-y divide-slate-800/60">
+                <!-- Daftar Grup -->
+                <div>
+                    <div class="menu-section px-4 py-2.5 bg-slate-900/90 text-xs font-bold text-slate-400 tracking-wider uppercase flex justify-between items-center border-b border-slate-800/60 sticky top-0 backdrop-blur-sm z-10">
+                        <span>Grup Saya</span>
+                        <button id="createGroupBtn" class="bg-teal-600/20 hover:bg-teal-600/30 text-teal-300 border border-teal-500/30 px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all">+ Buat Grup</button>
+                    </div>
+                    <div id="groupList" class="list-container max-h-36 overflow-y-auto divide-y divide-slate-800/40"></div>
+                </div>
 
-            <div class="menu-section">
-                <span>Daftar Kontak Saya</span>
-                <button id="addContactBtn">+ Add PIN</button>
+                <!-- Daftar Kontak -->
+                <div class="flex-1 flex flex-col min-h-[180px]">
+                    <div class="menu-section px-4 py-2.5 bg-slate-900/90 text-xs font-bold text-slate-400 tracking-wider uppercase flex justify-between items-center border-b border-slate-800/60 sticky top-0 backdrop-blur-sm z-10">
+                        <span>Daftar Kontak Saya</span>
+                        <button id="addContactBtn" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all">+ Add PIN</button>
+                    </div>
+                    <div id="contactList" class="list-container flex-1 overflow-y-auto divide-y divide-slate-800/40"></div>
+                </div>
             </div>
-            <div id="contactList" class="list-container"></div>
         </div>
 
         <!-- HALAMAN 2: CHAT ROOM -->
-        <div id="chatView" class="view hidden">
-            <div class="chat-header">
-                <button id="backBtn">❮ Kembali</button>
-                <img id="chatTargetAvatar" class="avatar" style="width: 33px; height: 33px;" src="" alt="DP">
-                <div class="chat-header-info">
-                    <div class="name" id="chatTargetName">Target</div>
-                    <div class="pm" id="chatTargetPm" style="font-size: 11px;">Status...</div>
+        <div id="chatView" class="view flex-1 flex flex-col overflow-hidden bg-slate-950 hidden">
+            <!-- Chat Header -->
+            <div class="chat-header bg-slate-900/90 backdrop-blur-md px-3.5 py-2.5 border-b border-slate-800 flex items-center gap-3 z-10">
+                <button id="backBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-1.5 rounded-lg text-xs transition-all flex items-center justify-center">❮</button>
+                <img id="chatTargetAvatar" class="avatar w-9 h-9 rounded-full object-cover bg-slate-800 ring-2 ring-slate-700" src="" alt="DP">
+                <div class="chat-header-info flex-1 overflow-hidden">
+                    <div class="name font-bold text-sm text-slate-100 truncate" id="chatTargetName">Target</div>
+                    <div class="pm text-[11px] text-slate-400 truncate" id="chatTargetPm">Status...</div>
                 </div>
-                <button id="inviteMemberBtn" class="hidden" style="background: #27ae60; border: none; color: white; padding: 4px 8px; border-radius: 3px; font-size: 11px; cursor: pointer;">+ Invite</button>
+                <button id="inviteMemberBtn" class="hidden bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-md text-xs font-semibold transition-all">+ Invite</button>
             </div>
 
-            <div id="messagesList" class="chat-messages"></div>
+            <!-- Messages Area -->
+            <div id="messagesList" class="chat-messages flex-1 p-4 overflow-y-auto flex flex-col gap-3 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px]"></div>
             
-            <form id="chatForm" class="chat-input">
-                <label for="imageInput" class="file-label" title="Kirim Gambar">📷</label>
-                <input type="file" id="imageInput" accept="image/*">
+            <!-- Chat Input Form -->
+            <form id="chatForm" class="chat-input p-2.5 bg-slate-900 border-t border-slate-800 flex gap-2 items-center">
+                <label for="imageInput" class="file-label bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-xl cursor-pointer text-sm font-bold transition-all border border-slate-700/60" title="Kirim Gambar">📷</label>
+                <input type="file" id="imageInput" accept="image/*" class="hidden">
                 
-                <input type="text" id="messageInput" placeholder="Tulis pesan..." autocomplete="off">
-                <button type="button" id="pingBtn" class="btn-ping">PING</button>
-                <button type="submit">Kirim</button>
+                <input type="text" id="messageInput" placeholder="Tulis pesan..." autocomplete="off"
+                       class="flex-1 bg-slate-800/90 border border-slate-700/60 rounded-xl px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all">
+                
+                <button type="button" id="pingBtn" class="btn-ping bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 px-3 py-2 rounded-xl font-bold text-xs transition-all active:scale-95">PING</button>
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-md shadow-emerald-950/40 transition-all active:scale-95">Kirim</button>
             </form>
         </div>
 
     </div>
 
+    <!-- Audio Elements -->
     <audio id="pingAudio" src="https://www.myinstants.com/media/sounds/bbm-ping.mp3" preload="auto"></audio>
     <audio id="bgMusicPlayer" preload="auto"></audio>
 
+    <!-- App Logic Script -->
     <script type="module">
-	//	import { initializeApp } from "firebase/app";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-		const firebaseConfig = {
-		  apiKey: "AIzaSyA_UH7bc9yjNULvG2vnXqdv7i9b8l_vd8E",
-		  authDomain: "chat-pmd.firebaseapp.com",
-		  projectId: "chat-pmd",
-		  storageBucket: "chat-pmd.firebasestorage.app",
-		  messagingSenderId: "655673422167",
-		  appId: "1:655673422167:web:005ff445d4fb2db1bd0e12"
-		};
+        const firebaseConfig = {
+          apiKey: "AIzaSyA_UH7bc9yjNULvG2vnXqdv7i9b8l_vd8E",
+          authDomain: "chat-pmd.firebaseapp.com",
+          projectId: "chat-pmd",
+          storageBucket: "chat-pmd.firebasestorage.app",
+          messagingSenderId: "655673422167",
+          appId: "1:655673422167:web:005ff445d4fb2db1bd0e12"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -257,7 +291,7 @@
         let userPm = "Available";
         let userMusic = "";
         let userAvatar = "";
-        let isPlayingMusic = false; // Status pemutar musik lokal
+        let isPlayingMusic = false;
 
         let activeChatId = null;   
         let activeChatType = null; 
@@ -373,6 +407,8 @@
             if(userData.music) {
                 isPlayingMusic = true;
                 playMusicBtn.innerText = "Stop";
+                playMusicBtn.classList.replace("bg-emerald-600", "bg-rose-600");
+                playMusicBtn.classList.replace("hover:bg-emerald-500", "hover:bg-rose-500");
             }
 
             registerView.classList.add('hidden');
@@ -433,6 +469,8 @@
                 isPlayingMusic = false;
                 myMusicDisplay.innerText = "Status: Tidak memutar lagu";
                 playMusicBtn.innerText = "Play";
+                playMusicBtn.classList.replace("bg-rose-600", "bg-emerald-600");
+                playMusicBtn.classList.replace("hover:bg-rose-500", "hover:bg-emerald-500");
                 songSelect.value = "";
                 await updateDoc(userRef, { music: "" });
             } else {
@@ -457,6 +495,8 @@
                 isPlayingMusic = true;
                 myMusicDisplay.innerText = `🎵 Listening: ${userMusic}`;
                 playMusicBtn.innerText = "Stop";
+                playMusicBtn.classList.replace("bg-emerald-600", "bg-rose-600");
+                playMusicBtn.classList.replace("hover:bg-emerald-500", "hover:bg-rose-500");
 
                 await updateDoc(userRef, { music: userMusic });
             }
@@ -467,7 +507,7 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            const songName = file.name.replace(/\.[^/.]+$/, ""); // Ambil nama file tanpa ekstensi
+            const songName = file.name.replace(/\.[^/.]+$/, "");
             const fileURL = URL.createObjectURL(file);
             const userRef = doc(db, "users", myPin);
 
@@ -478,7 +518,9 @@
             isPlayingMusic = true;
             myMusicDisplay.innerText = `🎵 Listening: ${userMusic}`;
             playMusicBtn.innerText = "Stop";
-            songSelect.value = ""; // Reset dropdown bawaan
+            playMusicBtn.classList.replace("bg-emerald-600", "bg-rose-600");
+            playMusicBtn.classList.replace("hover:bg-emerald-500", "hover:bg-rose-500");
+            songSelect.value = "";
 
             await updateDoc(userRef, { music: userMusic });
         });
@@ -544,7 +586,7 @@
                 onSnapshot(collection(db, "users"), (usersSnapshot) => {
                     contactList.innerHTML = "";
                     if (myContactsPins.length === 0) {
-                        contactList.innerHTML = `<div style="padding: 15px; text-align: center; color: #888; font-size: 12px;">Belum ada kontak. Klik "+ Add PIN" di atas!</div>`;
+                        contactList.innerHTML = `<div class="p-4 text-center text-slate-500 text-xs">Belum ada kontak. Klik "+ Add PIN" di atas!</div>`;
                         return;
                     }
 
@@ -552,13 +594,13 @@
                         const userData = userDoc.data();
                         if (myContactsPins.includes(userData.pin)) {
                             const item = document.createElement('div');
-                            item.className = 'list-item';
-                            const musicHtml = userData.music ? `<div class="music-status">🎵 ${userData.music}</div>` : "";
+                            item.className = 'list-item flex items-center gap-3 p-3 hover:bg-slate-800/60 transition-all cursor-pointer border-b border-slate-800/40';
+                            const musicHtml = userData.music ? `<div class="music-status text-[11px] text-emerald-400 font-medium truncate">🎵 ${userData.music}</div>` : "";
                             item.innerHTML = `
-                                <img class="avatar" src="${userData.avatar || 'https://i.pravatar.cc/150?u=' + userData.pin}" alt="DP">
-                                <div class="info">
-                                    <div class="name">${userData.name} <span style="font-size:10px; color:#888;">(${userData.pin})</span></div>
-                                    <div class="pm">${userData.pm || 'Available'}</div>
+                                <img class="avatar w-10 h-10 rounded-full object-cover bg-slate-800 ring-1 ring-slate-700" src="${userData.avatar || 'https://i.pravatar.cc/150?u=' + userData.pin}" alt="DP">
+                                <div class="info flex-1 overflow-hidden">
+                                    <div class="name text-xs font-bold text-slate-200">${userData.name} <span class="text-[10px] text-slate-500 font-normal">(${userData.pin})</span></div>
+                                    <div class="pm text-[11px] text-slate-400 truncate italic">${userData.pm || 'Available'}</div>
                                     ${musicHtml}
                                 </div>
                             `;
@@ -589,12 +631,12 @@
 
                     if (members.includes(myPin)) {
                         const item = document.createElement('div');
-                        item.className = 'list-item';
+                        item.className = 'list-item flex items-center gap-3 p-3 hover:bg-slate-800/60 transition-all cursor-pointer border-b border-slate-800/40';
                         item.innerHTML = `
-                            <img class="avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=${data.groupName}" alt="Group">
-                            <div class="info">
-                                <div class="name">👥 ${data.groupName}</div>
-                                <div class="pm">Anggota: ${members.length} orang</div>
+                            <img class="avatar w-10 h-10 rounded-full object-cover bg-slate-800 ring-1 ring-slate-700" src="https://api.dicebear.com/7.x/identicon/svg?seed=${data.groupName}" alt="Group">
+                            <div class="info flex-1 overflow-hidden">
+                                <div class="name text-xs font-bold text-slate-200">👥 ${data.groupName}</div>
+                                <div class="pm text-[11px] text-slate-400">Anggota: ${members.length} orang</div>
                             </div>
                         `;
                         item.addEventListener('click', () => {
@@ -699,21 +741,22 @@
                     const isMe = data.senderPin === myPin;
                     
                     if (data.type === "ping") {
-                        messageDiv.className = `message ping-msg`;
-                        messageDiv.innerHTML = `<strong>${data.senderName}</strong> mengirim <strong>PING!!!</strong>`;
+                        messageDiv.className = `message ping-msg bg-rose-950/60 border border-rose-500/40 text-rose-200 font-bold text-center py-2 px-4 rounded-xl self-center max-w-[85%] shadow-md shadow-rose-950/30 text-xs my-1`;
+                        messageDiv.innerHTML = `🔔 <strong>${data.senderName}</strong> mengirim <strong>PING!!!</strong>`;
                         if (!isMe && docId !== lastProcessedPingId) {
                             triggerPingEffect();
                             lastProcessedPingId = docId;
                         }
                     } else {
-                        messageDiv.className = `message ${isMe ? 'outgoing' : 'incoming'}`;
+                        const bgClass = isMe ? 'bg-emerald-600 text-white self-end rounded-2xl rounded-br-none shadow-md shadow-emerald-950/30' : 'bg-slate-800 text-slate-100 self-start rounded-2xl rounded-bl-none border border-slate-700/50 shadow-md shadow-slate-950/30';
+                        messageDiv.className = `message ${bgClass} p-3 max-w-[80%] break-words text-xs relative pb-5 my-0.5`;
                         
-                        let contentHtml = `<strong>${data.senderName}</strong><br>`;
+                        let contentHtml = `<strong class="text-[11px] opacity-80 block mb-1">${data.senderName}</strong>`;
                         if (data.type === "image") {
-                            contentHtml += `<img src="${data.imageBase64}" class="chat-image" alt="Gambar">`;
-                            if (data.text) contentHtml += `<div style="margin-top: 4px;">${data.text}</div>`;
+                            contentHtml += `<img src="${data.imageBase64}" class="chat-image max-w-full rounded-lg my-1 border border-black/10" alt="Gambar">`;
+                            if (data.text) contentHtml += `<div class="mt-1">${data.text}</div>`;
                         } else {
-                            contentHtml += `${data.text}`;
+                            contentHtml += `<div>${data.text}</div>`;
                         }
 
                         let statusText = "";
@@ -723,7 +766,7 @@
                             else if (data.status === "R") statusText = "R ✔✔";
                         }
                         
-                        contentHtml += `<span class="message-status">${statusText}</span>`;
+                        contentHtml += `<span class="message-status text-[9px] opacity-70 absolute bottom-1 right-2 font-mono">${statusText}</span>`;
                         messageDiv.innerHTML = contentHtml;
                     }
 
